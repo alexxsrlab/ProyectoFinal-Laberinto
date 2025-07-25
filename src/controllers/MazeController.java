@@ -5,6 +5,7 @@ import solver.*;
 import solver.solverImpl.*;
 import views.*;
 
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 public class MazeController {
@@ -101,4 +102,73 @@ public class MazeController {
             }
         }).start();
     }
+
+    public void limpiarLaberinto() {
+    // Limpiar el laberinto manteniendo dimensiones y paredes
+    maze.limpiarCeldas();
+    
+    // Restablecer posición inicial y final a valores por defecto
+    maze.setStartPosition(0, 0);
+    maze.setEndPosition(maze.rows - 1, maze.cols - 1);
+    
+    // Actualizar la vista
+    frame.obtenerPanel().repaint();
+    
+    // Mostrar mensaje de confirmación
+    SwingUtilities.invokeLater(() -> 
+        JOptionPane.showMessageDialog(frame,
+            "Laberinto reiniciado",
+            "Información",
+            JOptionPane.INFORMATION_MESSAGE)
+    );
+}
+
+    public void resolverLaberinto(String algorithmType) {
+        if (maze.grid[maze.startX][maze.startY].wall || 
+        maze.grid[maze.endX][maze.endY].wall) {
+        SwingUtilities.invokeLater(() -> 
+            JOptionPane.showMessageDialog(frame,
+                "El inicio o el final están en una pared",
+                "Error",
+                JOptionPane.ERROR_MESSAGE));
+        return;
+    }
+    new Thread(() -> {
+        MazeSolver solver;
+        
+        switch(algorithmType) {
+            case "DFS":
+                solver = new MazeSolverDFS();
+                break;
+            case "BFS":
+                solver = new MazeSolverBFS();
+                break;
+            case "Recursive":
+                solver = new MazeSolverRecursivo();
+                break;
+            case "RecursiveComplete":
+                solver = new MazeSolverRecursivoCompleto();
+                break;
+            case "RecursiveBT":
+                solver = new MazeSolverRecursivoCompletoBT();
+                break;
+            default:
+                SwingUtilities.invokeLater(() -> 
+                    JOptionPane.showMessageDialog(frame,
+                        "Algoritmo no reconocido",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE));
+                return;
+        }
+        
+        boolean resultado = solver.solve(maze, frame.obtenerPanel());
+        if (!resultado) {
+            SwingUtilities.invokeLater(() -> 
+                JOptionPane.showMessageDialog(frame,
+                    "No se pudo encontrar una solución",
+                    "Aviso",
+                    JOptionPane.WARNING_MESSAGE));
+        }
+    }).start();
+}
 }

@@ -33,4 +33,28 @@ public class Maze {
             }
         }
     }
+
+    public void limpiarCeldas() {
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                grid[i][j].visited = false;
+                grid[i][j].solution = false;
+                // Mantenemos el estado de las paredes (wall)
+            }
+        }
+    }
+    
+    public void setStartPosition(int x, int y) {
+        if (x >= 0 && x < rows && y >= 0 && y < cols && !grid[x][y].wall) {
+            startX = x;
+            startY = y;
+        }
+    }
+    
+    public void setEndPosition(int x, int y) {
+        if (x >= 0 && x < rows && y >= 0 && y < cols && !grid[x][y].wall) {
+            endX = x;
+            endY = y;
+        }
+    }
 }

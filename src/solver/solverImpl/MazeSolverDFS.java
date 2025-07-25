@@ -5,15 +5,20 @@ import models.*;
 import views.MazePanel;
 
 import java.util.Stack;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MazeSolverDFS implements MazeSolver {
     private Maze maze;
     private MazePanel panel;
+    private Map<String, int[]> parentMap;
+    private int solutionDelay = 150; // Tiempo entre pasos de solución (ms)
 
     @Override
     public boolean solve(Maze maze, MazePanel panel) {
         this.maze = maze;
         this.panel = panel;
+        this.parentMap = new HashMap<>();
         limpiarMaze(maze);
 
         Stack<int[]> stack = new Stack<>();
@@ -33,27 +38,63 @@ public class MazeSolverDFS implements MazeSolver {
             pausa();
 
             if (x == maze.endX && y == maze.endY) {
-                cell.solution = true;
-                panel.repaint();
+                mostrarCaminoSolucion(x, y);
                 return true;
             }
 
-            stack.push(new int[]{x + 1, y});
-            stack.push(new int[]{x - 1, y});
-            stack.push(new int[]{x, y + 1});
-            stack.push(new int[]{x, y - 1});
+            int[][] directions = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+            for (int[] dir : directions) {
+                int newX = x + dir[0];
+                int newY = y + dir[1];
+                
+                if (newX >= 0 && newX < maze.rows && newY >= 0 && newY < maze.cols) {
+                    if (!maze.grid[newX][newY].visited && !maze.grid[newX][newY].wall) {
+                        parentMap.put(newX + "," + newY, new int[]{x, y});
+                        stack.push(new int[]{newX, newY});
+                    }
+                }
+            }
         }
-
         return false;
     }
 
+    private void mostrarCaminoSolucion(int endX, int endY) {
+        Stack<int[]> camino = new Stack<>();
+        int[] current = new int[]{endX, endY};
+        
+        // Reconstruir camino (del final al inicio)
+        while (current != null) {
+            camino.push(current);
+            current = parentMap.get(current[0] + "," + current[1]);
+        }
+        
+        // Mostrar camino (del inicio al final)
+        while (!camino.isEmpty()) {
+            current = camino.pop();
+            int x = current[0];
+            int y = current[1];
+            
+            if ((x != maze.startX || y != maze.startY) && 
+                (x != maze.endX || y != maze.endY)) {
+                maze.grid[x][y].solution = true;
+                panel.repaint();
+                try {
+                    Thread.sleep(solutionDelay);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+    }
+
     private void limpiarMaze(Maze maze) {
-        for (int i = 0; i < maze.rows; i++)
+        for (int i = 0; i < maze.rows; i++) {
             for (int j = 0; j < maze.cols; j++) {
                 Cell c = maze.grid[i][j];
                 c.visited = false;
                 c.solution = false;
             }
+        }
         panel.repaint();
     }
 
