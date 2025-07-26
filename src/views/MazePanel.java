@@ -30,47 +30,59 @@ public class MazePanel extends JPanel implements MouseListener, MouseMotionListe
         super.paintComponent(g);
         Maze maze = controller.obtenerLaberinto();
 
+        int panelWidth = getWidth();
+        int panelHeight = getHeight();
+        int cellWidth = panelWidth / maze.cols;
+        int cellHeight = panelHeight / maze.rows;
+        int cellSize = Math.min(cellWidth, cellHeight);
+
+        // Calcular offsets para centrar el laberinto
+        int offsetX = (panelWidth - (cellSize * maze.cols)) / 2;
+        int offsetY = (panelHeight - (cellSize * maze.rows)) / 2;
+
         for (int i = 0; i < maze.rows; i++) {
             for (int j = 0; j < maze.cols; j++) {
                 Cell cell = maze.grid[i][j];
-                int x = j * CELL_SIZE;
-                int y = i * CELL_SIZE;
+                int x = offsetX + j * cellSize;
+                int y = offsetY + i * cellSize;
 
                 if (cell.wall) {
                     g.setColor(Color.BLACK);
-                    g.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+                    g.fillRect(x, y, cellSize, cellSize);
                 } else if (cell.solution) {
                     g.setColor(Color.GREEN);
-                    g.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+                    g.fillRect(x, y, cellSize, cellSize);
                 } else if (cell.visited) {
                     g.setColor(Color.YELLOW);
-                    g.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+                    g.fillRect(x, y, cellSize, cellSize);
                 } else {
                     g.setColor(Color.WHITE);
-                    g.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+                    g.fillRect(x, y, cellSize, cellSize);
                 }
 
                 g.setColor(Color.GRAY);
-                g.drawRect(x, y, CELL_SIZE, CELL_SIZE);
+                g.drawRect(x, y, cellSize, cellSize);
             }
         }
 
         // Dibujar inicio y fin
-        drawStartAndEnd(g);
+        drawStartAndEnd(g, cellSize, offsetX, offsetY);
     }
 
-    private void drawStartAndEnd(Graphics g) {
+    private void drawStartAndEnd(Graphics g, int cellSize, int offsetX, int offsetY) {
         Maze maze = controller.obtenerLaberinto();
-        int startX = maze.startY * CELL_SIZE;
-        int startY = maze.startX * CELL_SIZE;
-        int endX = maze.endY * CELL_SIZE;
-        int endY = maze.endX * CELL_SIZE;
-
-        g.setColor(Color.BLUE);
-        g.fillOval(startX + CELL_SIZE / 4, startY + CELL_SIZE / 4, CELL_SIZE / 2, CELL_SIZE / 2);
-
-        g.setColor(Color.RED);
-        g.fillOval(endX + CELL_SIZE / 4, endY + CELL_SIZE / 4, CELL_SIZE / 2, CELL_SIZE / 2);
+        if (maze.startX >= 0 && maze.startY >= 0) {
+            int startX = offsetX + maze.startY * cellSize;
+            int startY = offsetY + maze.startX * cellSize;
+            g.setColor(Color.BLUE);
+            g.fillOval(startX + cellSize / 4, startY + cellSize / 4, cellSize / 2, cellSize / 2);
+        }
+        if (maze.endX >= 0 && maze.endY >= 0) {
+            int endX = offsetX + maze.endY * cellSize;
+            int endY = offsetY + maze.endX * cellSize;
+            g.setColor(Color.RED);
+            g.fillOval(endX + cellSize / 4, endY + cellSize / 4, cellSize / 2, cellSize / 2);
+        }
     }
 
     // Métodos para activar los diferentes modos
@@ -119,9 +131,19 @@ public class MazePanel extends JPanel implements MouseListener, MouseMotionListe
     }
 
     private void handleCellClick(int mouseX, int mouseY) {
-        int col = mouseX / CELL_SIZE;
-        int row = mouseY / CELL_SIZE;
         Maze maze = controller.obtenerLaberinto();
+
+        int panelWidth = getWidth();
+        int panelHeight = getHeight();
+        int cellWidth = panelWidth / maze.cols;
+        int cellHeight = panelHeight / maze.rows;
+        int cellSize = Math.min(cellWidth, cellHeight);
+
+        int offsetX = (panelWidth - (cellSize * maze.cols)) / 2;
+        int offsetY = (panelHeight - (cellSize * maze.rows)) / 2;
+
+        int col = (mouseX - offsetX) / cellSize;
+        int row = (mouseY - offsetY) / cellSize;
 
         if (row >= 0 && row < maze.rows && col >= 0 && col < maze.cols) {
             if (settingStart) {

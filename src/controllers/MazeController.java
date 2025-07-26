@@ -13,7 +13,28 @@ public class MazeController {
     private Maze maze;
 
     public void inicializar() {
-        this.maze = new Maze(10, 10);
+        // Pedir filas y columnas al usuario
+        int filas = 10;
+        int columnas = 10;
+        boolean valido = false;
+        while (!valido) {
+            String filasStr = JOptionPane.showInputDialog(null, "Ingrese la cantidad de filas (mínimo 2):", "Filas", JOptionPane.QUESTION_MESSAGE);
+            if (filasStr == null) System.exit(0); // Cancelar
+            String columnasStr = JOptionPane.showInputDialog(null, "Ingrese la cantidad de columnas (mínimo 2):", "Columnas", JOptionPane.QUESTION_MESSAGE);
+            if (columnasStr == null) System.exit(0); // Cancelar
+            try {
+                filas = Integer.parseInt(filasStr);
+                columnas = Integer.parseInt(columnasStr);
+                if (filas >= 2 && columnas >= 2) {
+                    valido = true;
+                } else {
+                    JOptionPane.showMessageDialog(null, "Debe ingresar valores mayores o iguales a 2.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(null, "Ingrese solo números enteros.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+        this.maze = new Maze(filas, columnas);
         this.frame = new MazeFrame(this);
         frame.setVisible(true);
     }
@@ -170,5 +191,11 @@ public class MazeController {
                     JOptionPane.WARNING_MESSAGE));
         }
     }).start();
+}
+
+public void crearNuevoLaberinto(int filas, int columnas) {
+    this.maze = new Maze(filas, columnas);
+    this.frame = new views.MazeFrame(this);
+    frame.setVisible(true);
 }
 }

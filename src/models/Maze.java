@@ -3,33 +3,22 @@ package models;
 public class Maze {
     public Cell[][] grid;
     public int rows, cols;
-    public int startX = 0, startY = 0, endX = 9, endY = 9;
+    public int startX = -1, startY = -1, endX = -1, endY = -1; // Sin inicio ni fin
 
     public Maze(int r, int c) {
         this.rows = r;
         this.cols = c;
         this.grid = new Cell[r][c];
-        generarFijo();
+        generarVacio();
     }
 
-    private void generarFijo() {
-        int[][] mapa = new int[][] {
-            {0,1,0,0,0,1,0,0,0,0},
-            {0,1,0,1,0,1,0,1,1,0},
-            {0,0,0,1,0,0,0,0,1,0},
-            {0,1,1,1,1,1,1,0,1,0},
-            {0,0,0,0,0,0,1,0,1,0},
-            {0,1,1,1,1,0,1,0,1,0},
-            {0,0,0,0,1,0,1,0,0,0},
-            {1,1,1,0,1,0,1,1,1,0},
-            {0,0,0,0,0,0,0,0,1,0},
-            {0,1,1,1,1,1,1,0,1,0}
-        };
+    // Todas las celdas transitables, sin paredes
+    private void generarVacio() {
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                Cell c = new Cell();
-                c.wall = (mapa[i][j] == 1);
-                grid[i][j] = c;
+                Cell cell = new Cell();
+                cell.wall = false;
+                grid[i][j] = cell;
             }
         }
     }
