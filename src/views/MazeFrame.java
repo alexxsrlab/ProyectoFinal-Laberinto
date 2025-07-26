@@ -93,18 +93,18 @@ public class MazeFrame extends JFrame {
         solvePanel.setLayout(new BoxLayout(solvePanel, BoxLayout.X_AXIS));
 
         String[] algorithms = {
-            "Solve DFS",
-            "Solve BFS",
             "Recursive",
             "Recursive Complete",
-            "Recursive BT"
+            "Recursive BT",
+            "BFS",
+            "DFS"
         };
         String[] algorithmTypes = {
-            "DFS",
-            "BFS",
             "Recursive",
             "RecursiveComplete",
-            "RecursiveBT"
+            "RecursiveBT",
+            "BFS",
+            "DFS"
         };
         JComboBox<String> algorithmCombo = new JComboBox<>(algorithms);
         JPanel comboPanel = new JPanel();
