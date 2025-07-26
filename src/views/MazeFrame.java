@@ -49,6 +49,13 @@ public class MazeFrame extends JFrame {
         });
         menuArchivos.add(nuevoLabItem);
 
+        JMenuItem resultadosItem = new JMenuItem("Resultados");
+        resultadosItem.addActionListener(e -> {
+            ResultadosDialog dialog = new ResultadosDialog(this);
+            dialog.setVisible(true);
+        });
+        menuArchivos.add(resultadosItem);
+
         // Menú Acerca de
         JMenu menuAcerca = new JMenu("Acerca de");
         JMenuItem desarrolladoPor = new JMenuItem("Desarrollado por");

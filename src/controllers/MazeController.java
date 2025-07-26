@@ -1,5 +1,8 @@
 package controllers;
 
+import dao.AlgorithmResultDAO;
+import dao.daoImpl.AlgorithmResultDAOFile;
+import models.AlgorithmResult;
 import models.*;
 import solver.*;
 import solver.solverImpl.*;
@@ -11,6 +14,8 @@ import javax.swing.SwingUtilities;
 public class MazeController {
     private MazeFrame frame;
     private Maze maze;
+
+    private AlgorithmResultDAO resultDAO = new AlgorithmResultDAOFile();
 
     public void inicializar() {
         // Pedir filas y columnas al usuario
@@ -144,58 +149,64 @@ public class MazeController {
     );
 }
 
+    // Método para contar la longitud del camino solución
+    private int contarCaminoSolucion() {
+        int count = 0;
+        for (int i = 0; i < maze.rows; i++) {
+            for (int j = 0; j < maze.cols; j++) {
+                if (maze.grid[i][j].solution) count++;
+            }
+        }
+        return count;
+    }
+
+    // Modifica resolverLaberinto para guardar el resultado:
     public void resolverLaberinto(String algorithmType) {
         if (maze.grid[maze.startX][maze.startY].wall || 
-        maze.grid[maze.endX][maze.endY].wall) {
-        SwingUtilities.invokeLater(() -> 
-            JOptionPane.showMessageDialog(frame,
-                "El inicio o el final están en una pared",
-                "Error",
-                JOptionPane.ERROR_MESSAGE));
-        return;
-    }
-    new Thread(() -> {
-        MazeSolver solver;
-        
-        switch(algorithmType) {
-            case "DFS":
-                solver = new MazeSolverDFS();
-                break;
-            case "BFS":
-                solver = new MazeSolverBFS();
-                break;
-            case "Recursive":
-                solver = new MazeSolverRecursivo();
-                break;
-            case "RecursiveComplete":
-                solver = new MazeSolverRecursivoCompleto();
-                break;
-            case "RecursiveBT":
-                solver = new MazeSolverRecursivoCompletoBT();
-                break;
-            default:
-                SwingUtilities.invokeLater(() -> 
-                    JOptionPane.showMessageDialog(frame,
-                        "Algoritmo no reconocido",
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE));
-                return;
-        }
-        
-        boolean resultado = solver.solve(maze, frame.obtenerPanel());
-        if (!resultado) {
+            maze.grid[maze.endX][maze.endY].wall) {
             SwingUtilities.invokeLater(() -> 
                 JOptionPane.showMessageDialog(frame,
-                    "No se pudo encontrar una solución",
-                    "Aviso",
-                    JOptionPane.WARNING_MESSAGE));
+                    "El inicio o el final están en una pared",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE));
+            return;
         }
-    }).start();
-}
+        new Thread(() -> {
+            MazeSolver solver;
+            switch(algorithmType) {
+                case "DFS": solver = new MazeSolverDFS(); break;
+                case "BFS": solver = new MazeSolverBFS(); break;
+                case "Recursive": solver = new MazeSolverRecursivo(); break;
+                case "RecursiveComplete": solver = new MazeSolverRecursivoCompleto(); break;
+                case "RecursiveBT": solver = new MazeSolverRecursivoCompletoBT(); break;
+                default:
+                    SwingUtilities.invokeLater(() -> 
+                        JOptionPane.showMessageDialog(frame,
+                            "Algoritmo no reconocido",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE));
+                    return;
+            }
+            long start = System.nanoTime();
+            boolean resultado = solver.solve(maze, frame.obtenerPanel());
+            long end = System.nanoTime();
+            if (resultado) {
+                int pathLength = contarCaminoSolucion();
+                resultDAO.guardar(new AlgorithmResult(algorithmType, pathLength, end - start));
+            }
+            if (!resultado) {
+                SwingUtilities.invokeLater(() -> 
+                    JOptionPane.showMessageDialog(frame,
+                        "No se pudo encontrar una solución",
+                        "Aviso",
+                        JOptionPane.WARNING_MESSAGE));
+            }
+        }).start();
+    }
 
-public void crearNuevoLaberinto(int filas, int columnas) {
-    this.maze = new Maze(filas, columnas);
-    this.frame = new views.MazeFrame(this);
-    frame.setVisible(true);
-}
+    public void crearNuevoLaberinto(int filas, int columnas) {
+        this.maze = new Maze(filas, columnas);
+        this.frame = new views.MazeFrame(this);
+        frame.setVisible(true);
+    }
 }

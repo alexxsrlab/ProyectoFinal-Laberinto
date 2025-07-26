@@ -19,7 +19,7 @@ public class ResultadosDialog extends JDialog {
         dao = new AlgorithmResultDAOFile();
 
         setLayout(new BorderLayout());
-        model = new DefaultTableModel(new Object[]{"Algorithm", "Path Length", "Time (ms)"}, 0);
+        model = new DefaultTableModel(new Object[]{"Algoritmo", "Tamaño del Camino", "Tiempo (ms)"}, 0);
         JTable table = new JTable(model);
         cargarDatos();
 
@@ -27,11 +27,22 @@ public class ResultadosDialog extends JDialog {
 
         JButton limpiarBtn = new JButton("Limpiar Resultados");
         limpiarBtn.addActionListener(e -> {
-            dao.limpiar();
-            cargarDatos();
+            int resp = JOptionPane.showConfirmDialog(this, "¿Está seguro de borrar los resultados?", "Confirmar", JOptionPane.YES_NO_OPTION);
+            if (resp == JOptionPane.YES_OPTION) {
+                dao.limpiar();
+                cargarDatos();
+            }
         });
 
-        add(limpiarBtn, BorderLayout.SOUTH);
+        JButton graficarBtn = new JButton("Graficar Resultados");
+        graficarBtn.addActionListener(e -> {
+            new GraficaResultadosDialog((JFrame) getOwner(), dao.obtenerTodos()).setVisible(true);
+        });
+
+        JPanel btnPanel = new JPanel();
+        btnPanel.add(limpiarBtn);
+        btnPanel.add(graficarBtn);
+        add(btnPanel, BorderLayout.SOUTH);
 
         setSize(400, 300);
         setLocationRelativeTo(owner);
