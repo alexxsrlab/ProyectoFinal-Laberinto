@@ -2,7 +2,6 @@ package controllers;
 
 import dao.AlgorithmResultDAO;
 import dao.daoImpl.AlgorithmResultDAOFile;
-import models.AlgorithmResult;
 import models.*;
 import solver.*;
 import solver.solverImpl.*;
@@ -179,6 +178,7 @@ public class MazeController {
                 case "Recursive": solver = new MazeSolverRecursivo(); break;
                 case "RecursiveComplete": solver = new MazeSolverRecursivoCompleto(); break;
                 case "RecursiveBT": solver = new MazeSolverRecursivoCompletoBT(); break;
+                case "Backtracking": solver = new MazeSolverBackTracking(); break;
                 default:
                     SwingUtilities.invokeLater(() -> 
                         JOptionPane.showMessageDialog(frame,

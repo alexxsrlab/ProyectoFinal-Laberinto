@@ -18,12 +18,9 @@ public class MazeSolverRecursivoCompleto implements MazeSolver {
         
         boolean result = dfsFullExploration(maze.startX, maze.startY);
         
-        // Marcar el camino solución final
         if (result) {
             marcarCaminoSolucion();
-        // } else {
-        //     panel.showMessage("No se encontró camino con exploración completa");
-         }
+        }
         panel.repaint();
         return result;
     }
@@ -42,17 +39,16 @@ public class MazeSolverRecursivoCompleto implements MazeSolver {
 
         if (x == maze.endX && y == maze.endY) {
             solutionFound = true;
-            cell.solution = true; // Marcar final como parte de la solución
+            cell.solution = true;
             return true;
         }
 
-        // Explorar en 4 direcciones
-        if (dfsFullExploration(x, y + 1) ||  // Derecha
-            dfsFullExploration(x + 1, y) ||  // Abajo
-            dfsFullExploration(x, y - 1) ||  // Izquierda
-            dfsFullExploration(x - 1, y)) { // Arriba
+        // ORDEN DE EXPLORACIÓN MODIFICADO: Abajo, Derecha, Arriba, Izquierda
+        if (dfsFullExploration(x + 1, y) ||  // Abajo 
+            dfsFullExploration(x, y + 1) ||  // Derecha 
+            dfsFullExploration(x - 1, y) ||  // Arriba 
+            dfsFullExploration(x, y - 1)) {  // Izquierda 
             
-            // Marcar como parte de la solución (verde)
             cell.solution = true;
             panel.repaint();
             pausa();
@@ -63,7 +59,6 @@ public class MazeSolverRecursivoCompleto implements MazeSolver {
     }
 
     private void marcarCaminoSolucion() {
-        // Resetear todas las celdas visitadas para mostrar solo el camino solución
         for (int i = 0; i < maze.rows; i++) {
             for (int j = 0; j < maze.cols; j++) {
                 maze.grid[i][j].visited = false;
@@ -83,7 +78,7 @@ public class MazeSolverRecursivoCompleto implements MazeSolver {
 
     private void pausa() {
         try {
-            Thread.sleep(100); // Ajusta este valor para cambiar la velocidad
+            Thread.sleep(100);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }

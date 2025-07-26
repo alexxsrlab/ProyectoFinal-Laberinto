@@ -46,7 +46,10 @@ public class MazePanel extends JPanel implements MouseListener, MouseMotionListe
                 int x = offsetX + j * cellSize;
                 int y = offsetY + i * cellSize;
 
-                if (cell.wall) {
+                if (cell.backtrack) {
+                    g.setColor(new Color(255, 200, 200)); // Color rosa claro para backtracking
+                    g.fillRect(x, y, cellSize, cellSize);
+                }if (cell.wall) {
                     g.setColor(Color.BLACK);
                     g.fillRect(x, y, cellSize, cellSize);
                 } else if (cell.solution) {

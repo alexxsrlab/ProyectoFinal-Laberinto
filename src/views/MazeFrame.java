@@ -104,14 +104,16 @@ public class MazeFrame extends JFrame {
             "Recursive Complete",
             "Recursive BT",
             "BFS",
-            "DFS"
+            "DFS",
+            "Backtracking"
         };
         String[] algorithmTypes = {
             "Recursive",
             "RecursiveComplete",
             "RecursiveBT",
             "BFS",
-            "DFS"
+            "DFS",
+            "Backtracking"
         };
         JComboBox<String> algorithmCombo = new JComboBox<>(algorithms);
         JPanel comboPanel = new JPanel();
