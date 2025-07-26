@@ -5,149 +5,118 @@ import javax.swing.*;
 import java.awt.*;
 
 public class MazeFrame extends JFrame {
-    private MazePanel panel;
-    private MazeController controller;
+    private final MazePanel panel;
+    private final MazeController controlador;
+    private final JComboBox<String> combo;
 
-    public MazeFrame(MazeController controller) {
-        this.controller = controller;
+    private static final String[] nombres = {
+        "Recursivo","Recursivo Completo","Recursivo BT","BFS","DFS","Backtracking"
+    };
+    private static final String[] tipos = {
+        "Recursive","RecursiveComplete","RecursiveBT","BFS","DFS","Backtracking"
+    };
+
+    public MazeFrame(MazeController controlador) {
+        this.controlador = controlador;
         setTitle("Maze Solver");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
-
-        // BARRA DE MENÚ
-        JMenuBar menuBar = new JMenuBar();
-
-        // Menú Archivos
-        JMenu menuArchivos = new JMenu("Archivos");
-        JMenuItem nuevoLabItem = new JMenuItem("Crear otro laberinto");
-        nuevoLabItem.addActionListener(e -> {
-            final int[] filas = {10};
-            final int[] columnas = {10};
-            boolean valido = false;
-            while (!valido) {
-                String filasStr = JOptionPane.showInputDialog(this, "Ingrese la cantidad de filas (mínimo 2):", "Filas", JOptionPane.QUESTION_MESSAGE);
-                if (filasStr == null) return;
-                String columnasStr = JOptionPane.showInputDialog(this, "Ingrese la cantidad de columnas (mínimo 2):", "Columnas", JOptionPane.QUESTION_MESSAGE);
-                if (columnasStr == null) return;
-                try {
-                    filas[0] = Integer.parseInt(filasStr);
-                    columnas[0] = Integer.parseInt(columnasStr);
-                    if (filas[0] >= 2 && columnas[0] >= 2) {
-                        valido = true;
-                    } else {
-                        JOptionPane.showMessageDialog(this, "Debe ingresar valores mayores o iguales a 2.", "Error", JOptionPane.ERROR_MESSAGE);
-                    }
-                } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(this, "Ingrese solo números enteros.", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-            // Cerrar ventana actual y abrir una nueva
-            dispose();
-            SwingUtilities.invokeLater(() -> {
-                controller.crearNuevoLaberinto(filas[0], columnas[0]);
-            });
-        });
-        menuArchivos.add(nuevoLabItem);
-
-        JMenuItem resultadosItem = new JMenuItem("Resultados");
-        resultadosItem.addActionListener(e -> {
-            ResultadosDialog dialog = new ResultadosDialog(this);
-            dialog.setVisible(true);
-        });
-        menuArchivos.add(resultadosItem);
-
-        // Menú Acerca de
-        JMenu menuAcerca = new JMenu("Acerca de");
-        JMenuItem desarrolladoPor = new JMenuItem("Desarrollado por");
-        desarrolladoPor.addActionListener(e -> JOptionPane.showMessageDialog(this,
-            "Mateo Cordero\nAriel Badillo\nMichael Yumbla\nErick Bermeo",
-            "Desarrolladores", JOptionPane.INFORMATION_MESSAGE));
-        JMenuItem contacto = new JMenuItem("Contacto");
-        contacto.addActionListener(e -> JOptionPane.showMessageDialog(this,
-            "mcorderoc1@est.ups.edu.ec\nabadillob@est.ups.edu.ec\nmyumblap@est.ups.edu.ec\nebermeol1@est.ups.edu.ec",
-            "Correos de contacto", JOptionPane.INFORMATION_MESSAGE));
-        menuAcerca.add(desarrolladoPor);
-        menuAcerca.add(contacto);
-
-        menuBar.add(menuArchivos);
-        menuBar.add(menuAcerca);
-        setJMenuBar(menuBar);
-
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // Panel del laberinto (MazePanel) en el centro, se expandirá con la ventana
-        panel = new MazePanel(controller);
+        crearBarraMenu();
+        panel = new MazePanel(controlador);
         add(panel, BorderLayout.CENTER);
 
-        // Panel superior para controles de edición (NORTE)
-        JPanel editPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10)); // Centrado y con espacio entre botones
-        JButton setStartBtn = new JButton("Añadir Inicio");
-        setStartBtn.addActionListener(e -> panel.setStartPositionMode());
-        JButton setEndBtn = new JButton("Añadir Fin");
-        setEndBtn.addActionListener(e -> panel.setEndPositionMode());
-        JButton addWallBtn = new JButton("Agregar Paredes");
-        addWallBtn.addActionListener(e -> panel.setWallMode());
-        JButton clearWallBtn = new JButton("Quitar Paredes");
-        clearWallBtn.addActionListener(e -> panel.setRemoveWallMode());
-        editPanel.add(setStartBtn);
-        editPanel.add(setEndBtn);
-        editPanel.add(addWallBtn);
-        editPanel.add(clearWallBtn);
-        add(editPanel, BorderLayout.NORTH);
-
-        // Panel inferior SOLO con recorridos, resolver y limpiar (SUR)
-        JPanel solvePanel = new JPanel();
-        solvePanel.setLayout(new BoxLayout(solvePanel, BoxLayout.X_AXIS));
-
-        String[] algorithms = {
-            "Recursive",
-            "Recursive Complete",
-            "Recursive BT",
-            "BFS",
-            "DFS",
-            "Backtracking"
-        };
-        String[] algorithmTypes = {
-            "Recursive",
-            "RecursiveComplete",
-            "RecursiveBT",
-            "BFS",
-            "DFS",
-            "Backtracking"
-        };
-        JComboBox<String> algorithmCombo = new JComboBox<>(algorithms);
-        JPanel comboPanel = new JPanel();
-        comboPanel.setBorder(BorderFactory.createTitledBorder("Recorridos"));
-        comboPanel.setLayout(new BorderLayout());
-        comboPanel.add(algorithmCombo, BorderLayout.CENTER);
-        comboPanel.setMaximumSize(new Dimension(200, 60)); // Limita el tamaño máximo del panel del combo
-
-        JButton solveBtn = new JButton("Resolver");
-        solveBtn.setMaximumSize(new Dimension(120, 40));
-        solveBtn.addActionListener(e -> {
-            int idx = algorithmCombo.getSelectedIndex();
-            controller.resolverLaberinto(algorithmTypes[idx]);
-        });
-
-        JButton clearBtn = new JButton("Limpiar");
-        clearBtn.setMaximumSize(new Dimension(120, 40));
-        clearBtn.addActionListener(e -> controller.limpiarLaberinto());
-
-
-        solvePanel.add(Box.createRigidArea(new Dimension(10, 0))); // Espacio izquierdo
-        solvePanel.add(comboPanel);
-        solvePanel.add(Box.createHorizontalGlue()); // Empuja los siguientes a la derecha
-        solvePanel.add(solveBtn);
-        solvePanel.add(Box.createRigidArea(new Dimension(10, 0)));
-        solvePanel.add(clearBtn);
-        solvePanel.add(Box.createRigidArea(new Dimension(10, 0))); // Espacio derecho
-
-        add(solvePanel, BorderLayout.SOUTH);
+        crearPanelEdicion();
+        combo = new JComboBox<>(nombres);
+        crearPanelControles();
 
         setSize(600, 700);
-        setLocationRelativeTo(null); 
+        setLocationRelativeTo(null);
     }
 
+    private void crearBarraMenu() {
+        JMenuBar mb = new JMenuBar();
+        JMenu ma = new JMenu("Archivos");
+        JMenuItem miNuevo = new JMenuItem("Crear otro laberinto");
+        miNuevo.addActionListener(e -> controlador.crearNuevoLaberinto(
+            controlador.obtenerLaberinto().rows,
+            controlador.obtenerLaberinto().cols
+        ));
+        ma.add(miNuevo);
+        JMenuItem miRes = new JMenuItem("Resultados");
+        miRes.addActionListener(e -> new ResultadosDialog(this).setVisible(true));
+        ma.add(miRes);
+        mb.add(ma);
+
+        JMenu mac = new JMenu("Acerca de");
+        JMenuItem mauth = new JMenuItem("Desarrollado por");
+        mauth.addActionListener(e -> JOptionPane.showMessageDialog(
+            this,
+            "Mateo Cordero\nAriel Badillo\nMichael Yumbla\nErick Bermeo",
+            "Autores", JOptionPane.INFORMATION_MESSAGE
+        ));
+        JMenuItem mcon = new JMenuItem("Contacto");
+        mcon.addActionListener(e -> JOptionPane.showMessageDialog(
+            this,
+            "mcorderoc1@est.ups.edu.ec\nbadillob@est.ups.edu.ec\nmyumblap@est.ups.edu.ec\nebermeol1@est.ups.edu.ec",
+            "Emails", JOptionPane.INFORMATION_MESSAGE
+        ));
+        mac.add(mauth);
+        mac.add(mcon);
+        mb.add(mac);
+
+        setJMenuBar(mb);
+    }
+
+    private void crearPanelEdicion() {
+        JPanel p = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        JButton b1 = new JButton("Añadir Inicio");
+        b1.addActionListener(e -> panel.setStartPositionMode());
+        JButton b2 = new JButton("Añadir Fin");
+        b2.addActionListener(e -> panel.setEndPositionMode());
+        JButton b3 = new JButton("Agregar Paredes");
+        b3.addActionListener(e -> panel.setWallMode());
+        JButton b4 = new JButton("Quitar Paredes");
+        b4.addActionListener(e -> panel.setRemoveWallMode());
+        p.add(b1); p.add(b2); p.add(b3); p.add(b4);
+        add(p, BorderLayout.NORTH);
+    }
+
+    private void crearPanelControles() {
+        JPanel p = new JPanel();
+        p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
+        JPanel pc = new JPanel(new BorderLayout());
+        pc.setBorder(BorderFactory.createTitledBorder("Recorridos"));
+        pc.add(combo, BorderLayout.CENTER);
+        pc.setMaximumSize(new Dimension(200, 60));
+
+        JButton br = new JButton("Resolver");
+        br.setMaximumSize(new Dimension(120, 40));
+        br.addActionListener(e -> controlador.resolverLaberinto(tipos[combo.getSelectedIndex()]));
+
+        JButton bp = new JButton("Paso a Paso");
+        bp.setMaximumSize(new Dimension(120, 40));
+        bp.addActionListener(e -> controlador.resolverPorPasos(tipos[combo.getSelectedIndex()]));
+
+        JButton bl = new JButton("Limpiar");
+        bl.setMaximumSize(new Dimension(120, 40));
+        bl.addActionListener(e -> controlador.limpiarLaberinto());
+
+        p.add(Box.createRigidArea(new Dimension(10, 0)));
+        p.add(pc);
+        p.add(Box.createHorizontalGlue());
+        p.add(br);
+        p.add(Box.createRigidArea(new Dimension(10, 0)));
+        p.add(bp);
+        p.add(Box.createRigidArea(new Dimension(10, 0)));
+        p.add(bl);
+        p.add(Box.createRigidArea(new Dimension(10, 0)));
+        add(p, BorderLayout.SOUTH);
+    }
+
+    /**  
+     * Este método coincide con lo que usa el controlador.  
+     */
     public MazePanel obtenerPanel() {
         return panel;
     }

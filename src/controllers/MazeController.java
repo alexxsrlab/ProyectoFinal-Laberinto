@@ -2,211 +2,138 @@ package controllers;
 
 import dao.AlgorithmResultDAO;
 import dao.daoImpl.AlgorithmResultDAOFile;
-import models.*;
-import solver.*;
+import models.AlgorithmResult;
+import models.Maze;
+import solver.MazeSolver;
 import solver.solverImpl.*;
-import views.*;
+import views.MazeFrame;
 
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 public class MazeController {
     private MazeFrame frame;
-    private Maze maze;
-
-    private AlgorithmResultDAO resultDAO = new AlgorithmResultDAOFile();
+    private Maze laberinto;
+    private final AlgorithmResultDAO resultDAO = new AlgorithmResultDAOFile();
 
     public void inicializar() {
-        // Pedir filas y columnas al usuario
-        int filas = 10;
-        int columnas = 10;
-        boolean valido = false;
-        while (!valido) {
-            String filasStr = JOptionPane.showInputDialog(null, "Ingrese la cantidad de filas (mínimo 2):", "Filas", JOptionPane.QUESTION_MESSAGE);
-            if (filasStr == null) System.exit(0); // Cancelar
-            String columnasStr = JOptionPane.showInputDialog(null, "Ingrese la cantidad de columnas (mínimo 2):", "Columnas", JOptionPane.QUESTION_MESSAGE);
-            if (columnasStr == null) System.exit(0); // Cancelar
+        int filas, columnas;
+        do {
+            String f = JOptionPane.showInputDialog(
+                null, "Ingrese la cantidad de filas (mínimo 4):", "Filas", JOptionPane.QUESTION_MESSAGE
+            );
+            if (f == null) System.exit(0);
+            String c = JOptionPane.showInputDialog(
+                null, "Ingrese la cantidad de columnas (mínimo 4):", "Columnas", JOptionPane.QUESTION_MESSAGE
+            );
+            if (c == null) System.exit(0);
             try {
-                filas = Integer.parseInt(filasStr);
-                columnas = Integer.parseInt(columnasStr);
-                if (filas >= 2 && columnas >= 2) {
-                    valido = true;
-                } else {
-                    JOptionPane.showMessageDialog(null, "Debe ingresar valores mayores o iguales a 2.", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            } catch (NumberFormatException e) {
-                JOptionPane.showMessageDialog(null, "Ingrese solo números enteros.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        }
-        this.maze = new Maze(filas, columnas);
-        this.frame = new MazeFrame(this);
+                filas    = Integer.parseInt(f);
+                columnas = Integer.parseInt(c);
+                if (filas >= 4 && columnas >= 4) break;
+            } catch (NumberFormatException ignored) {}
+            JOptionPane.showMessageDialog(
+                null, "Valores inválidos. Deben ser enteros ≥ 4.", "Error", JOptionPane.ERROR_MESSAGE
+            );
+        } while (true);
+
+        laberinto = new Maze(filas, columnas);
+        frame = new MazeFrame(this);
         frame.setVisible(true);
     }
 
     public Maze obtenerLaberinto() {
-        return maze;
+        return laberinto;
     }
 
-    // Ejemplo con recursivo con backtracking usando hilo y mensaje
-    public void resolverRecursivoBT() {
-        new Thread(() -> {
-            MazeSolver solver = new MazeSolverRecursivoCompletoBT();
-            boolean resultado = solver.solve(maze, frame.obtenerPanel());
-            if (!resultado) {
-                // Para mostrar diálogo en el hilo de la GUI
-                SwingUtilities.invokeLater(() -> 
-                    javax.swing.JOptionPane.showMessageDialog(frame,
-                        "No se pudo encontrar una solución",
-                        "Aviso",
-                        javax.swing.JOptionPane.WARNING_MESSAGE)
-                );
-            }
-        }).start();
-    }
-
-    // Similar para DFS
-    public void resolverConDFS() {
-        new Thread(() -> {
-            MazeSolver solver = new MazeSolverDFS();
-            boolean resultado = solver.solve(maze, frame.obtenerPanel());
-            if (!resultado) {
-                SwingUtilities.invokeLater(() -> 
-                    javax.swing.JOptionPane.showMessageDialog(frame,
-                        "No se pudo encontrar una solución",
-                        "Aviso",
-                        javax.swing.JOptionPane.WARNING_MESSAGE)
-                );
-            }
-        }).start();
-    }
-
-    // Similar para BFS
-    public void resolverConBFS() {
-        new Thread(() -> {
-            MazeSolver solver = new MazeSolverBFS();
-            boolean resultado = solver.solve(maze, frame.obtenerPanel());
-            if (!resultado) {
-                SwingUtilities.invokeLater(() -> 
-                    javax.swing.JOptionPane.showMessageDialog(frame,
-                        "No se pudo encontrar una solución",
-                        "Aviso",
-                        javax.swing.JOptionPane.WARNING_MESSAGE)
-                );
-            }
-        }).start();
-    }
-
-    // Similar para recursivo simple
-    public void resolverRecursivo() {
-        new Thread(() -> {
-            MazeSolver solver = new MazeSolverRecursivo();
-            boolean resultado = solver.solve(maze, frame.obtenerPanel());
-            if (!resultado) {
-                SwingUtilities.invokeLater(() -> 
-                    javax.swing.JOptionPane.showMessageDialog(frame,
-                        "No se pudo encontrar una solución",
-                        "Aviso",
-                        javax.swing.JOptionPane.WARNING_MESSAGE)
-                );
-            }
-        }).start();
-    }
-
-    // Similar para recursivo completo
-    public void resolverRecursivoCompleto() {
-        new Thread(() -> {
-            MazeSolver solver = new MazeSolverRecursivoCompleto();
-            boolean resultado = solver.solve(maze, frame.obtenerPanel());
-            if (!resultado) {
-                SwingUtilities.invokeLater(() -> 
-                    javax.swing.JOptionPane.showMessageDialog(frame,
-                        "No se pudo encontrar una solución",
-                        "Aviso",
-                        javax.swing.JOptionPane.WARNING_MESSAGE)
-                );
-            }
-        }).start();
-    }
-
-    public void limpiarLaberinto() {
-    // Limpiar el laberinto manteniendo dimensiones y paredes
-    maze.limpiarCeldas();
-    
-    // Restablecer posición inicial y final a valores por defecto
-    maze.setStartPosition(0, 0);
-    maze.setEndPosition(maze.rows - 1, maze.cols - 1);
-    
-    // Actualizar la vista
-    frame.obtenerPanel().repaint();
-    
-    // Mostrar mensaje de confirmación
-    SwingUtilities.invokeLater(() -> 
-        JOptionPane.showMessageDialog(frame,
-            "Laberinto reiniciado",
-            "Información",
-            JOptionPane.INFORMATION_MESSAGE)
-    );
-}
-
-    // Método para contar la longitud del camino solución
-    private int contarCaminoSolucion() {
-        int count = 0;
-        for (int i = 0; i < maze.rows; i++) {
-            for (int j = 0; j < maze.cols; j++) {
-                if (maze.grid[i][j].solution) count++;
-            }
-        }
-        return count;
-    }
-
-    // Modifica resolverLaberinto para guardar el resultado:
-    public void resolverLaberinto(String algorithmType) {
-        if (maze.grid[maze.startX][maze.startY].wall || 
-            maze.grid[maze.endX][maze.endY].wall) {
-            SwingUtilities.invokeLater(() -> 
-                JOptionPane.showMessageDialog(frame,
-                    "El inicio o el final están en una pared",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE));
+    public void resolverLaberinto(String tipoAlg) {
+        if (laberinto.grid[laberinto.startX][laberinto.startY].wall ||
+            laberinto.grid[laberinto.endX][laberinto.endY].wall) {
+            SwingUtilities.invokeLater(() ->
+                JOptionPane.showMessageDialog(
+                    frame, "Inicio o fin están en pared", "Error", JOptionPane.ERROR_MESSAGE
+                )
+            );
             return;
         }
         new Thread(() -> {
-            MazeSolver solver;
-            switch(algorithmType) {
-                case "DFS": solver = new MazeSolverDFS(); break;
-                case "BFS": solver = new MazeSolverBFS(); break;
-                case "Recursive": solver = new MazeSolverRecursivo(); break;
-                case "RecursiveComplete": solver = new MazeSolverRecursivoCompleto(); break;
-                case "RecursiveBT": solver = new MazeSolverRecursivoCompletoBT(); break;
-                case "Backtracking": solver = new MazeSolverBackTracking(); break;
-                default:
-                    SwingUtilities.invokeLater(() -> 
-                        JOptionPane.showMessageDialog(frame,
-                            "Algoritmo no reconocido",
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE));
-                    return;
-            }
-            long start = System.nanoTime();
-            boolean resultado = solver.solve(maze, frame.obtenerPanel());
-            long end = System.nanoTime();
-            if (resultado) {
-                int pathLength = contarCaminoSolucion();
-                resultDAO.guardar(new AlgorithmResult(algorithmType, pathLength, end - start));
-            }
-            if (!resultado) {
-                SwingUtilities.invokeLater(() -> 
-                    JOptionPane.showMessageDialog(frame,
-                        "No se pudo encontrar una solución",
-                        "Aviso",
-                        JOptionPane.WARNING_MESSAGE));
+            MazeSolver sol = crearSolucionador(tipoAlg);
+            long t0 = System.nanoTime();
+            boolean ok = sol.solve(laberinto, frame.obtenerPanel());
+            long t1 = System.nanoTime();
+            if (ok) {
+                int len = contarCamino();
+                resultDAO.guardar(new AlgorithmResult(tipoAlg, len, t1 - t0));
+            } else {
+                SwingUtilities.invokeLater(() ->
+                    JOptionPane.showMessageDialog(
+                        frame, "No se encontró solución", "Aviso", JOptionPane.WARNING_MESSAGE
+                    )
+                );
             }
         }).start();
     }
 
-    public void crearNuevoLaberinto(int filas, int columnas) {
-        this.maze = new Maze(filas, columnas);
-        this.frame = new views.MazeFrame(this);
+    public void resolverPorPasos(String tipoAlg) {
+        new Thread(() -> {
+            MazeSolver sol = crearSolucionador(tipoAlg);
+            sol.setDelaySolucion(500);            // medio segundo de delay
+            sol.solve(laberinto, frame.obtenerPanel());
+        }).start();
+    }
+
+    private MazeSolver crearSolucionador(String tipo) {
+        switch (tipo) {
+            case "DFS":               return new MazeSolverDFS();
+            case "BFS":               return new MazeSolverBFS();
+            case "Recursive":         return new MazeSolverRecursivo();
+            case "RecursiveComplete": return new MazeSolverRecursivoCompleto();
+            case "RecursiveBT":       return new MazeSolverRecursivoCompletoBT();
+            case "Backtracking":      return new MazeSolverBackTracking();
+            default: throw new IllegalArgumentException("Algoritmo desconocido: " + tipo);
+        }
+    }
+
+    public void limpiarLaberinto() {
+        // 1) Quitar todas las paredes
+        for (int i = 0; i < laberinto.rows; i++) {
+            for (int j = 0; j < laberinto.cols; j++) {
+                laberinto.grid[i][j].wall = false;
+            }
+        }
+        
+        // 2) Limpiar visitados y soluciones (mantiene filas/cols)
+        laberinto.limpiarCeldas();
+        
+        // 3) Restablecer inicio y fin
+        laberinto.setStartPosition(0, 0);
+        laberinto.setEndPosition(laberinto.rows - 1, laberinto.cols - 1);
+    
+        // 4) Refrescar la vista
+        frame.obtenerPanel().repaint();
+        
+        // 5) Mensaje de confirmación
+        SwingUtilities.invokeLater(() ->
+            JOptionPane.showMessageDialog(
+                frame,
+                "Laberinto reiniciado",
+                "Información",
+                JOptionPane.INFORMATION_MESSAGE
+            )
+        );
+    }
+
+    private int contarCamino() {
+        int cnt = 0;
+        for (int i = 0; i < laberinto.rows; i++)
+            for (int j = 0; j < laberinto.cols; j++)
+                if (laberinto.grid[i][j].solution) cnt++;
+        return cnt;
+    }
+
+    public void crearNuevoLaberinto(int f, int c) {
+        frame.dispose();
+        laberinto = new Maze(f, c);
+        frame = new MazeFrame(this);
         frame.setVisible(true);
     }
 }
