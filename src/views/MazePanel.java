@@ -36,7 +36,6 @@ public class MazePanel extends JPanel implements MouseListener, MouseMotionListe
         int cellHeight = panelHeight / maze.rows;
         int cellSize = Math.min(cellWidth, cellHeight);
 
-        // Calcular offsets para centrar el laberinto
         int offsetX = (panelWidth - (cellSize * maze.cols)) / 2;
         int offsetY = (panelHeight - (cellSize * maze.rows)) / 2;
 
@@ -46,31 +45,27 @@ public class MazePanel extends JPanel implements MouseListener, MouseMotionListe
                 int x = offsetX + j * cellSize;
                 int y = offsetY + i * cellSize;
 
-                if (cell.backtrack) {
-                    g.setColor(new Color(255, 200, 200)); // Color rosa claro para backtracking
-                    g.fillRect(x, y, cellSize, cellSize);
-                }if (cell.wall) {
+                if (cell.wall) {
                     g.setColor(Color.BLACK);
-                    g.fillRect(x, y, cellSize, cellSize);
-                } else if (cell.solution) {
+                } else if (cell.backtrack) {
                     g.setColor(Color.GREEN);
-                    g.fillRect(x, y, cellSize, cellSize);
-                } else if (cell.visited) {
+                } else if (cell.solution) {
                     g.setColor(Color.YELLOW);
-                    g.fillRect(x, y, cellSize, cellSize);
+                } else if (cell.visited) {
+                    g.setColor(new Color(200, 200, 255));
                 } else {
                     g.setColor(Color.WHITE);
-                    g.fillRect(x, y, cellSize, cellSize);
                 }
 
+                g.fillRect(x, y, cellSize, cellSize);
                 g.setColor(Color.GRAY);
                 g.drawRect(x, y, cellSize, cellSize);
             }
         }
 
-        // Dibujar inicio y fin
         drawStartAndEnd(g, cellSize, offsetX, offsetY);
     }
+
 
     private void drawStartAndEnd(Graphics g, int cellSize, int offsetX, int offsetY) {
         Maze maze = controller.obtenerLaberinto();

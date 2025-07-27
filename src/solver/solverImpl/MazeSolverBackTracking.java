@@ -7,24 +7,37 @@ import views.MazePanel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 
 public class MazeSolverBackTracking implements MazeSolver {
+    // ——— añadidos para paso a paso:
+    private Semaphore pasoSem = null;
+    @Override
+    public void setPasoSemaphore(Semaphore pasoSem) {
+        this.pasoSem = pasoSem;
+    }
+    private void esperarPaso() {
+        if (pasoSem != null) {
+            try { pasoSem.acquire(); }
+            catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        }
+    }
+    // ——————————————————————————————
+
     private Maze maze;
     private MazePanel panel;
     private boolean[][] visited;
-    private int solutionDelay = 50;              // valor por defecto
+    private int solutionDelay = 50;
     private final List<Cell> finalPath = new ArrayList<>();
-
-    @Override
-    public void setDelaySolucion(int milisegundos) {
-        this.solutionDelay = milisegundos;
-    }
 
     @Override
     public boolean solve(Maze maze, MazePanel panel) {
         this.maze = maze;
         this.panel = panel;
         initialize();
+
+        // primer paso manual (si aplica)
+        esperarPaso();
 
         boolean result = backtrack(maze.startX, maze.startY);
         if (result) highlightFinalPath();
@@ -39,8 +52,8 @@ public class MazeSolverBackTracking implements MazeSolver {
         for (int i = 0; i < maze.rows; i++) {
             for (int j = 0; j < maze.cols; j++) {
                 Cell c = maze.grid[i][j];
-                c.visited   = false;
-                c.solution  = false;
+                c.visited = false;
+                c.solution = false;
                 c.backtrack = false;
                 visited[i][j] = false;
             }
@@ -53,6 +66,7 @@ public class MazeSolverBackTracking implements MazeSolver {
 
         visited[x][y] = true;
         maze.grid[x][y].visited = true;
+        esperarPaso();
         panel.repaint();
         pause(solutionDelay);
 
@@ -69,6 +83,7 @@ public class MazeSolverBackTracking implements MazeSolver {
         }
 
         maze.grid[x][y].backtrack = true;
+        esperarPaso();
         panel.repaint();
         pause(solutionDelay/2);
         maze.grid[x][y].backtrack = false;
@@ -78,16 +93,14 @@ public class MazeSolverBackTracking implements MazeSolver {
     private void highlightFinalPath() {
         for (int i = finalPath.size() - 1; i >= 0; i--) {
             finalPath.get(i).solution = true;
+            esperarPaso();
             panel.repaint();
             pause(solutionDelay);
         }
     }
 
     private void pause(int ms) {
-        try {
-            Thread.sleep(ms);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        try { Thread.sleep(ms); }
+        catch (InterruptedException e) { Thread.currentThread().interrupt(); }
     }
 }

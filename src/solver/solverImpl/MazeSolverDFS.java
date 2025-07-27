@@ -6,17 +6,27 @@ import solver.MazeSolver;
 import views.MazePanel;
 
 import java.util.*;
+import java.util.concurrent.Semaphore;
 
 public class MazeSolverDFS implements MazeSolver {
+    // ——— paso a paso
+    private Semaphore pasoSem = null;
+    @Override
+    public void setPasoSemaphore(Semaphore pasoSem) {
+        this.pasoSem = pasoSem;
+    }
+    private void esperarPaso() {
+        if (pasoSem != null) {
+            try { pasoSem.acquire(); }
+            catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        }
+    }
+    // ——————————————————————————
+
     private Maze maze;
     private MazePanel panel;
-    private int solutionDelay = 150;             // valor por defecto
+    private int solutionDelay = 150;
     private final Map<String,int[]> parentMap = new HashMap<>();
-
-    @Override
-    public void setDelaySolucion(int milisegundos) {
-        this.solutionDelay = milisegundos;
-    }
 
     @Override
     public boolean solve(Maze maze, MazePanel panel) {
@@ -27,32 +37,32 @@ public class MazeSolverDFS implements MazeSolver {
         Stack<int[]> stack = new Stack<>();
         stack.push(new int[]{maze.startX, maze.startY});
 
+        // primer paso manual
+        esperarPaso();
+
         while (!stack.isEmpty()) {
             int[] pos = stack.pop();
             int x = pos[0], y = pos[1];
-
-            if (x < 0 || x >= maze.rows || y < 0 || y >= maze.cols) continue;
+            if (x<0||x>=maze.rows||y<0||y>=maze.cols) continue;
             Cell c = maze.grid[x][y];
             if (c.wall || c.visited) continue;
 
             c.visited = true;
+            esperarPaso();
             panel.repaint();
-            pausa();
+            pause(solutionDelay);
 
-            if (x == maze.endX && y == maze.endY) {
-                reconstruirSolucion(x, y);
+            if (x==maze.endX && y==maze.endY) {
+                reconstruirSolucion(x,y);
                 return true;
             }
-
-            for (int[] d : new int[][]{{-1,0},{0,1},{1,0},{0,-1}}) {
-                int nx = x + d[0], ny = y + d[1];
-                if (nx>=0 && nx<maze.rows &&
-                    ny>=0 && ny<maze.cols &&
-                    !maze.grid[nx][ny].visited &&
-                    !maze.grid[nx][ny].wall) {
-
-                    parentMap.put(nx + "," + ny, new int[]{x, y});
-                    stack.push(new int[]{nx, ny});
+            for (int[] d: new int[][]{{-1,0},{0,1},{1,0},{0,-1}}) {
+                int nx=x+d[0], ny=y+d[1];
+                if (nx>=0&&nx<maze.rows&&ny>=0&&ny<maze.cols
+                 && !maze.grid[nx][ny].visited
+                 && !maze.grid[nx][ny].wall) {
+                    parentMap.put(nx+","+ny, new int[]{x,y});
+                    stack.push(new int[]{nx,ny});
                 }
             }
         }
@@ -60,38 +70,36 @@ public class MazeSolverDFS implements MazeSolver {
     }
 
     private void reconstruirSolucion(int endX, int endY) {
-        Deque<int[]> camino = new ArrayDeque<>();
-        String key = endX + "," + endY;
-        while (key != null) {
+        Deque<int[]> path = new ArrayDeque<>();
+        String key = endX+","+endY;
+        while (key!=null) {
             String[] p = key.split(",");
-            int x = Integer.parseInt(p[0]), y = Integer.parseInt(p[1]);
-            camino.push(new int[]{x, y});
+            int x=Integer.parseInt(p[0]), y=Integer.parseInt(p[1]);
+            path.push(new int[]{x,y});
             int[] padre = parentMap.get(key);
-            key = padre == null ? null : padre[0] + "," + padre[1];
+            key = (padre==null?null:padre[0]+","+padre[1]);
         }
-        while (!camino.isEmpty()) {
-            int[] pos = camino.pop();
+        while (!path.isEmpty()) {
+            int[] pos = path.pop();
             maze.grid[pos[0]][pos[1]].solution = true;
+            esperarPaso();
             panel.repaint();
-            pausa();
+            pause(solutionDelay);
         }
     }
 
     private void limpiarMaze() {
-        for (int i = 0; i < maze.rows; i++)
-            for (int j = 0; j < maze.cols; j++) {
+        for (int i=0;i<maze.rows;i++)
+            for (int j=0;j<maze.cols;j++){
                 Cell c = maze.grid[i][j];
-                c.visited  = false;
+                c.visited = false;
                 c.solution = false;
             }
         panel.repaint();
     }
 
-    private void pausa() {
-        try {
-            Thread.sleep(solutionDelay);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+    private void pause(int ms) {
+        try { Thread.sleep(ms); }
+        catch (InterruptedException e) { Thread.currentThread().interrupt(); }
     }
 }

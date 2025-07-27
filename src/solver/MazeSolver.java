@@ -2,18 +2,21 @@ package solver;
 
 import models.Maze;
 import views.MazePanel;
+import java.util.concurrent.Semaphore;
 
 public interface MazeSolver {
-    /**
-     * Resuelve el laberinto y repinta el panel.
-     * @return true si encontró solución, false en caso contrario.
+    /**  
+     * Resuelve el laberinto. Devuelve true si encontró solución.  
      */
     boolean solve(Maze maze, MazePanel panel);
 
-    /**
-     * Ajusta el delay entre pasos (Paso a Paso).
+    /**  
+     * Ajusta el delay “automático”. Tú ya lo tenías.  
      */
-    default void setDelaySolucion(int milisegundos) {
-        // Sobrescribir en las implementaciones
-    }
+    default void setDelaySolucion(int milisegundos) { }
+
+    /**  
+     * Configura el semáforo para paso a paso manual.  
+     */
+    default void setPasoSemaphore(Semaphore pasoSem) { }
 }

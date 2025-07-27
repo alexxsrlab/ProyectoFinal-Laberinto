@@ -6,17 +6,27 @@ import solver.MazeSolver;
 import views.MazePanel;
 
 import java.util.*;
+import java.util.concurrent.Semaphore;
 
 public class MazeSolverBFS implements MazeSolver {
+    // ——— paso a paso
+    private Semaphore pasoSem = null;
+    @Override
+    public void setPasoSemaphore(Semaphore pasoSem) {
+        this.pasoSem = pasoSem;
+    }
+    private void esperarPaso() {
+        if (pasoSem != null) {
+            try { pasoSem.acquire(); }
+            catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        }
+    }
+    // ——————————————————————
+
     private Maze maze;
     private MazePanel panel;
-    private int solutionDelay = 50;               // valor por defecto
+    private int solutionDelay = 50;
     private final Map<String, String> parentMap = new HashMap<>();
-
-    @Override
-    public void setDelaySolucion(int milisegundos) {
-        this.solutionDelay = milisegundos;
-    }
 
     @Override
     public boolean solve(Maze maze, MazePanel panel) {
@@ -24,6 +34,9 @@ public class MazeSolverBFS implements MazeSolver {
         this.panel = panel;
         limpiarMaze();
         parentMap.clear();
+
+        // primer paso manual
+        esperarPaso();
 
         Queue<int[]> queue = new LinkedList<>();
         queue.add(new int[]{maze.startX, maze.startY});
@@ -35,70 +48,62 @@ public class MazeSolverBFS implements MazeSolver {
             int x = pos[0], y = pos[1];
 
             if (x == maze.endX && y == maze.endY) {
-                found = true;
-                break;
+                found = true; break;
             }
 
             for (int[] d : new int[][]{{1,0},{-1,0},{0,1},{0,-1}}) {
                 int nx = x + d[0], ny = y + d[1];
-                if (nx >= 0 && nx < maze.rows &&
-                    ny >= 0 && ny < maze.cols &&
-                    !maze.grid[nx][ny].wall &&
-                    !maze.grid[nx][ny].visited) {
-
+                if (nx>=0 && nx<maze.rows && ny>=0 && ny<maze.cols
+                 && !maze.grid[nx][ny].wall
+                 && !maze.grid[nx][ny].visited) {
                     maze.grid[nx][ny].visited = true;
                     parentMap.put(nx + "," + ny, x + "," + y);
                     queue.add(new int[]{nx, ny});
                 }
             }
 
+            esperarPaso();
             panel.repaint();
-            pause();
+            pause(solutionDelay);
         }
 
-        if (found) {
-            animarSolucion();
-        }
+        if (found) animarSolucion();
         return found;
     }
 
     private void animarSolucion() {
         Deque<int[]> stack = new ArrayDeque<>();
         int x = maze.endX, y = maze.endY;
-        while (x != maze.startX || y != maze.startY) {
-            stack.push(new int[]{x, y});
-            String key = parentMap.get(x + "," + y);
-            if (key == null) break;
+        while (x!=maze.startX || y!=maze.endY) {
+            stack.push(new int[]{x,y});
+            String key = parentMap.get(x+","+y);
+            if (key==null) break;
             String[] p = key.split(",");
-            x = Integer.parseInt(p[0]);
-            y = Integer.parseInt(p[1]);
+            x = Integer.parseInt(p[0]); y = Integer.parseInt(p[1]);
         }
         stack.push(new int[]{maze.startX, maze.startY});
 
         while (!stack.isEmpty()) {
             int[] pos = stack.pop();
             maze.grid[pos[0]][pos[1]].solution = true;
+            esperarPaso();
             panel.repaint();
-            pause();
+            pause(solutionDelay);
         }
     }
 
     private void limpiarMaze() {
-        for (int i = 0; i < maze.rows; i++) {
+        for (int i = 0; i < maze.rows; i++)
             for (int j = 0; j < maze.cols; j++) {
                 Cell c = maze.grid[i][j];
-                c.visited  = false;
+                c.visited = false;
                 c.solution = false;
             }
-        }
         panel.repaint();
     }
 
-    private void pause() {
-        try {
-            Thread.sleep(solutionDelay);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+    private void pause(int ms) {
+        try { Thread.sleep(ms); }
+        catch (InterruptedException e) { Thread.currentThread().interrupt(); }
     }
 }
