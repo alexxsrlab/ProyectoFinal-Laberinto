@@ -25,56 +25,71 @@ public class MazeSolverRecursivo implements MazeSolver {
     private Maze maze;
     private MazePanel panel;
     private int solutionDelay = 100;
+    private boolean solutionFound = false;
 
     @Override
     public boolean solve(Maze maze, MazePanel panel) {
         this.maze = maze;
         this.panel = panel;
         limpiarMaze();
+        solutionFound = false;
 
         // primer paso manual
         esperarPaso();
 
-        boolean result = dfs(maze.startX, maze.startY);
+        boolean result = dfsLimited(maze.startX, maze.startY);
         panel.repaint();
+        
+        // if (!result) {
+        //     panel.showMessage("No se encontró camino (solo busca derecha/abajo)");
+        // }
         return result;
     }
 
-    private boolean dfs(int x, int y) {
-        if (x<0||x>=maze.rows||y<0||y>=maze.cols) return false;
-        Cell c = maze.grid[x][y];
-        if (c.wall || c.visited) return false;
+    private boolean dfsLimited(int x, int y) {
+        if (solutionFound) return true;
+        if (x < 0 || x >= maze.rows || y < 0 || y >= maze.cols) return false;
+        
+        Cell cell = maze.grid[x][y];
+        if (cell.wall || cell.visited) return false;
 
-        c.visited = true;
+        // Marcar como visitado
+        cell.visited = true;
         esperarPaso();
         panel.repaint();
         pausa();
 
-        if (x==maze.endX && y==maze.endY) {
-            c.solution = true;
+        if (x == maze.endX && y == maze.endY) {
+            cell.solution = true;
+            solutionFound = true;
             return true;
         }
-        for (int[] d: new int[][]{{1,0},{0,1},{-1,0},{0,-1}}) {
-            if (dfs(x+d[0], y+d[1])) {
-                maze.grid[x][y].solution = true;
-                return true;
-            }
+
+        // Solo explorar derecha (y+1) y abajo (x+1)
+        if (dfsLimited(x, y + 1) || dfsLimited(x + 1, y)) {
+            cell.solution = true;
+            return true;
         }
+
         return false;
     }
 
     private void limpiarMaze() {
-        for (int i=0;i<maze.rows;i++)
-            for (int j=0;j<maze.cols;j++){
-                Cell c=maze.grid[i][j];
+        for (int i = 0; i < maze.rows; i++) {
+            for (int j = 0; j < maze.cols; j++) {
+                Cell c = maze.grid[i][j];
                 c.visited = false;
                 c.solution = false;
             }
+        }
         panel.repaint();
     }
 
     private void pausa() {
-        try { Thread.sleep(solutionDelay); }
-        catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        try { 
+            Thread.sleep(solutionDelay); 
+        } catch (InterruptedException e) { 
+            Thread.currentThread().interrupt(); 
+        }
     }
 }

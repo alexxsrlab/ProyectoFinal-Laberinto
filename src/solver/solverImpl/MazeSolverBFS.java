@@ -74,12 +74,15 @@ public class MazeSolverBFS implements MazeSolver {
     private void animarSolucion() {
         Deque<int[]> stack = new ArrayDeque<>();
         int x = maze.endX, y = maze.endY;
-        while (x!=maze.startX || y!=maze.endY) {
-            stack.push(new int[]{x,y});
-            String key = parentMap.get(x+","+y);
-            if (key==null) break;
+        
+        // 🔧 Corrección aquí:
+        while (x != maze.startX || y != maze.startY) {
+            stack.push(new int[]{x, y});
+            String key = parentMap.get(x + "," + y);
+            if (key == null) break;
             String[] p = key.split(",");
-            x = Integer.parseInt(p[0]); y = Integer.parseInt(p[1]);
+            x = Integer.parseInt(p[0]); 
+            y = Integer.parseInt(p[1]);
         }
         stack.push(new int[]{maze.startX, maze.startY});
 
