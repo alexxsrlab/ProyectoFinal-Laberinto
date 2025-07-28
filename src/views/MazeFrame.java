@@ -91,6 +91,7 @@ public class MazeFrame extends JFrame {
         JPanel pCtrl = new JPanel();
         pCtrl.setLayout(new BoxLayout(pCtrl, BoxLayout.X_AXIS));
 
+        JLabel recorridoLabel = new JLabel("Recorridos:");
         algorithmCombo = new JComboBox<>(algorithmNames);
 
         JButton bSolve = new JButton("Resolver");
@@ -118,6 +119,8 @@ public class MazeFrame extends JFrame {
         );
 
         pCtrl.add(Box.createRigidArea(new Dimension(10, 0)));
+        pCtrl.add(recorridoLabel);
+        pCtrl.add(Box.createRigidArea(new Dimension(5, 0)));
         pCtrl.add(algorithmCombo);
         pCtrl.add(Box.createHorizontalGlue());
         pCtrl.add(bSolve);
