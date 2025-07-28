@@ -117,3 +117,51 @@ src/
 ```
 
 ## 📸 Capturas de Pantalla
+
+### - Al iniciar el programa, se solicitará al usuario que ingrese el número de filas y columnas para definir la estructura del laberinto. Esta será la primera interacción visible en pantalla.
+
+
+![alt text](image.png)
+![alt text](image-1.png)
+
+### - Luego de la definicion de filas y columnas, veremos toda la interfaz del laberinto como se ve:
+
+![alt text](image-2.png)
+
+### Explicacion de cada funcion de los items en la interfaz:
+
+**Añadir Inicio:** Se encarga de Marcar el inicio del laberinto.
+
+**Añadir Fin:** Se encarga de Marcar el fin del laberinto
+
+**Agregar Paredes:** Se encarga de agregar "Paredes" o de definir las casillas que no seran transitables en el laberinto.
+
+**Quitar Paredes:** Como su nombre lo dice eliminara las casillas no transitables y volveran a ser transitables.
+
+**Recorridos:** Marca el comboBox una caja que contiene todos los metodos de resolucion de el laberinto cada metodo ya se explico su funcionamiento
+
+**Resolver:** Segun el metodo señalado, este boton ejecutara este metodo y reolvera el laberinto.
+
+**Paso a paso:** Resolvera el laberinto pero cada vez que le demos click a este boton marcara casilla por casilla el recorrido.
+
+**Limpiar:** Va a encargarse de limpiar el laberinto, el cual eliminara todo menos el inicio y el fin
+
+**Menu Archivo:** Un menu el cual tendra 2 items uno que se va a encargar de crear un laberinto desde cero, otro el cual se encargara de mostrar resultados mediante tablas comparativas y grafica de esos resultados 
+
+**Menu Acerca de:** Tendra dos items Contacto y Desarrolladores que como sus nombres indican Mostraran el nombre de los desarrolladores del proyecto y sus contactos de email.
+
+## 👨‍💻Imagenes de Ejecucion
+
+![alt text](image-3.png)
+
+![alt text](image-4.png)
+
+![alt text](image-5.png)
+
+![alt text](image-6.png)
+
+![alt text](image-7.png)
+
+![alt text](image-8.png)
+
+![alt text](image-9.png)
