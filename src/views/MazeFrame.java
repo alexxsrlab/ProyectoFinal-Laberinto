@@ -27,6 +27,7 @@ public class MazeFrame extends JFrame {
         // Menú
         JMenuBar mb = new JMenuBar();
         JMenu mArc = new JMenu("Archivo");
+
         JMenuItem mNuevo = new JMenuItem("Crear otro laberinto");
         mNuevo.addActionListener(e ->
             controlador.crearNuevoLaberinto(
@@ -35,6 +36,7 @@ public class MazeFrame extends JFrame {
             )
         );
         mArc.add(mNuevo);
+
         JMenuItem mRes = new JMenuItem("Resultados");
         mRes.addActionListener(e ->
             new ResultadosDialog(this).setVisible(true)
@@ -43,6 +45,7 @@ public class MazeFrame extends JFrame {
         mb.add(mArc);
 
         JMenu mAc = new JMenu("Acerca de");
+
         JMenuItem mAut = new JMenuItem("Desarrollado por");
         mAut.addActionListener(e ->
             JOptionPane.showMessageDialog(
@@ -51,6 +54,8 @@ public class MazeFrame extends JFrame {
                 "Autores", JOptionPane.INFORMATION_MESSAGE
             )
         );
+        mAc.add(mAut);
+
         JMenuItem mCon = new JMenuItem("Contacto");
         mCon.addActionListener(e ->
             JOptionPane.showMessageDialog(
@@ -59,10 +64,9 @@ public class MazeFrame extends JFrame {
                 "Correos", JOptionPane.INFORMATION_MESSAGE
             )
         );
-        mAc.add(mAut);
         mAc.add(mCon);
-        mb.add(mAc);
 
+        mb.add(mAc);
         setJMenuBar(mb);
 
         // Panel del laberinto
@@ -70,17 +74,19 @@ public class MazeFrame extends JFrame {
         add(panel, BorderLayout.CENTER);
 
         // Panel de edición
-        JPanel pEd = new JPanel(
-            new FlowLayout(FlowLayout.CENTER, 20, 10)
-        );
+        JPanel pEd = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
         JButton bStart = new JButton("Añadir Inicio");
         bStart.addActionListener(e -> panel.setStartPositionMode());
+
         JButton bEnd = new JButton("Añadir Fin");
         bEnd.addActionListener(e -> panel.setEndPositionMode());
+
         JButton bWall = new JButton("Agregar Paredes");
         bWall.addActionListener(e -> panel.setWallMode());
+
         JButton bClearWall = new JButton("Quitar Paredes");
         bClearWall.addActionListener(e -> panel.setRemoveWallMode());
+
         pEd.add(bStart);
         pEd.add(bEnd);
         pEd.add(bWall);
@@ -97,26 +103,20 @@ public class MazeFrame extends JFrame {
         JButton bSolve = new JButton("Resolver");
         bSolve.setMaximumSize(new Dimension(120, 40));
         bSolve.addActionListener(e -> {
-            String tipo = algorithmTypes[
-                algorithmCombo.getSelectedIndex()
-            ];
+            String tipo = algorithmTypes[algorithmCombo.getSelectedIndex()];
             controlador.resolverLaberinto(tipo);
         });
 
         JButton bStep = new JButton("Paso a Paso");
         bStep.setMaximumSize(new Dimension(120, 40));
         bStep.addActionListener(e -> {
-            String tipo = algorithmTypes[
-                algorithmCombo.getSelectedIndex()
-            ];
+            String tipo = algorithmTypes[algorithmCombo.getSelectedIndex()];
             controlador.pasoAPaso(tipo);
         });
 
         JButton bClear = new JButton("Limpiar");
         bClear.setMaximumSize(new Dimension(120, 40));
-        bClear.addActionListener(e ->
-            controlador.limpiarLaberinto()
-        );
+        bClear.addActionListener(e -> controlador.limpiarLaberinto());
 
         pCtrl.add(Box.createRigidArea(new Dimension(10, 0)));
         pCtrl.add(recorridoLabel);

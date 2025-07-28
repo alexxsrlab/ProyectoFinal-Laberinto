@@ -30,25 +30,16 @@ public class MazeController {
     public void inicializar() {
         int filas, columnas;
         do {
-            String f = JOptionPane.showInputDialog(
-                null, "Ingrese la cantidad de filas (mínimo 4):",
-                "Filas", JOptionPane.QUESTION_MESSAGE
-            );
+            String f = JOptionPane.showInputDialog(null, "Ingrese la cantidad de filas (mínimo 4):", "Filas", JOptionPane.QUESTION_MESSAGE);
             if (f == null) System.exit(0);
-            String c = JOptionPane.showInputDialog(
-                null, "Ingrese la cantidad de columnas (mínimo 4):",
-                "Columnas", JOptionPane.QUESTION_MESSAGE
-            );
+            String c = JOptionPane.showInputDialog(null, "Ingrese la cantidad de columnas (mínimo 4):", "Columnas", JOptionPane.QUESTION_MESSAGE);
             if (c == null) System.exit(0);
             try {
-                filas    = Integer.parseInt(f);
+                filas = Integer.parseInt(f);
                 columnas = Integer.parseInt(c);
                 if (filas >= 4 && columnas >= 4) break;
             } catch (NumberFormatException ignored) {}
-            JOptionPane.showMessageDialog(
-                null, "Valores inválidos. Deben ser enteros ≥ 4.",
-                "Error", JOptionPane.ERROR_MESSAGE
-            );
+            JOptionPane.showMessageDialog(null, "Valores inválidos. Deben ser enteros ≥ 4.", "Error", JOptionPane.ERROR_MESSAGE);
         } while (true);
 
         laberinto = new Maze(filas, columnas);
@@ -64,27 +55,44 @@ public class MazeController {
         if (laberinto.grid[laberinto.startX][laberinto.startY].wall ||
             laberinto.grid[laberinto.endX][laberinto.endY].wall) {
             SwingUtilities.invokeLater(() ->
-                JOptionPane.showMessageDialog(
-                    frame, "Inicio o fin están en pared",
-                    "Error", JOptionPane.ERROR_MESSAGE
-                )
+                JOptionPane.showMessageDialog(frame, "Inicio o fin están en pared", "Error", JOptionPane.ERROR_MESSAGE)
             );
             return;
         }
+
         new Thread(() -> {
+            limpiarRecorrido();
+
             MazeSolver sol = crearSolucionador(tipoAlg);
-            long t0 = System.nanoTime();
+            sol.setDelaySolucion(100); // Amarillo paso a paso
             boolean ok = sol.solve(laberinto, frame.obtenerPanel());
-            long t1 = System.nanoTime();
+
             if (ok) {
-                int len = contarCamino();
-                resultDAO.guardar(new AlgorithmResult(tipoAlg, len, t1 - t0));
+                List<Point> camino = capturarCamino();
+                try {
+                    Thread.sleep(300);
+                } catch (InterruptedException ignored) {}
+
+                for (Point p : camino) {
+                    laberinto.grid[p.x][p.y].backtrack = true;
+                    SwingUtilities.invokeLater(() -> frame.obtenerPanel().repaint());
+                    try {
+                        Thread.sleep(150);
+                    } catch (InterruptedException ignored) {}
+                }
+
+                for (Point p : camino) {
+                    laberinto.grid[p.x][p.y].solution = false;
+                }
+
+                SwingUtilities.invokeLater(() -> frame.obtenerPanel().repaint());
+
+                long t1 = System.nanoTime();
+                int len = camino.size();
+                resultDAO.guardar(new AlgorithmResult(tipoAlg, len, t1));
             } else {
                 SwingUtilities.invokeLater(() ->
-                    JOptionPane.showMessageDialog(
-                        frame, "No se encontró solución",
-                        "Aviso", JOptionPane.WARNING_MESSAGE
-                    )
+                    JOptionPane.showMessageDialog(frame, "No se encontró solución", "Aviso", JOptionPane.WARNING_MESSAGE)
                 );
             }
         }).start();
@@ -92,10 +100,12 @@ public class MazeController {
 
     public void pasoAPaso(String tipoAlg) {
         if (!modoManualIniciado) {
+            limpiarRecorrido();
+
             modoManualIniciado = true;
-            forwardDone       = false;
-            modoRegreso       = false;
-            camino            = null;
+            forwardDone = false;
+            modoRegreso = false;
+            camino = null;
 
             pasoSem = new Semaphore(0);
             new Thread(() -> {
@@ -118,45 +128,47 @@ public class MazeController {
             if (backwardIndex >= 0) {
                 Point p = camino.get(backwardIndex--);
                 laberinto.grid[p.x][p.y].backtrack = true;
-                SwingUtilities.invokeLater(() ->
-                    frame.obtenerPanel().repaint()
-                );
+                SwingUtilities.invokeLater(() -> frame.obtenerPanel().repaint());
             }
             if (backwardIndex < 0) {
                 SwingUtilities.invokeLater(() ->
-                    JOptionPane.showMessageDialog(
-                        frame,
-                        "El recorrido ha finalizado",
-                        "Información",
-                        JOptionPane.INFORMATION_MESSAGE
-                    )
+                    JOptionPane.showMessageDialog(frame, "El recorrido ha finalizado", "Información", JOptionPane.INFORMATION_MESSAGE)
                 );
                 modoManualIniciado = false;
             }
         }
     }
 
+    private void limpiarRecorrido() {
+        for (int i = 0; i < laberinto.rows; i++)
+            for (int j = 0; j < laberinto.cols; j++) {
+                laberinto.grid[i][j].visited = false;
+                laberinto.grid[i][j].solution = false;
+                laberinto.grid[i][j].backtrack = false;
+            }
+        SwingUtilities.invokeLater(() -> frame.obtenerPanel().repaint());
+    }
+
     private List<Point> capturarCamino() {
         List<Point> path = new ArrayList<>();
         int sx = laberinto.startX, sy = laberinto.startY;
-        int ex = laberinto.endX,   ey = laberinto.endY;
+        int ex = laberinto.endX, ey = laberinto.endY;
         boolean[][] vis = new boolean[laberinto.rows][laberinto.cols];
         dfsPath(sx, sy, ex, ey, vis, path);
         return path;
     }
 
-    private boolean dfsPath(int x, int y, int ex, int ey,
-                            boolean[][] vis, List<Point> path) {
-        if (x<0||x>=laberinto.rows||y<0||y>=laberinto.cols) return false;
+    private boolean dfsPath(int x, int y, int ex, int ey, boolean[][] vis, List<Point> path) {
+        if (x < 0 || x >= laberinto.rows || y < 0 || y >= laberinto.cols) return false;
         if (vis[x][y] || !laberinto.grid[x][y].solution) return false;
         vis[x][y] = true;
         if (x == ex && y == ey) {
-            path.add(new Point(x,y));
+            path.add(new Point(x, y));
             return true;
         }
-        for (int[] d : new int[][]{{1,0},{-1,0},{0,1},{0,-1}}) {
-            if (dfsPath(x+d[0], y+d[1], ex, ey, vis, path)) {
-                path.add(0, new Point(x,y));
+        for (int[] d : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+            if (dfsPath(x + d[0], y + d[1], ex, ey, vis, path)) {
+                path.add(0, new Point(x, y));
                 return true;
             }
         }
@@ -176,22 +188,8 @@ public class MazeController {
         laberinto.setEndPosition(-1, -1);
         frame.obtenerPanel().repaint();
         SwingUtilities.invokeLater(() ->
-            JOptionPane.showMessageDialog(
-                frame,
-                "Laberinto reiniciado (todo fue borrado)",
-                "Información",
-                JOptionPane.INFORMATION_MESSAGE
-            )
+            JOptionPane.showMessageDialog(frame, "Laberinto reiniciado (todo fue borrado)", "Información", JOptionPane.INFORMATION_MESSAGE)
         );
-    }
-
-
-    private int contarCamino() {
-        int cnt = 0;
-        for (int i = 0; i < laberinto.rows; i++)
-            for (int j = 0; j < laberinto.cols; j++)
-                if (laberinto.grid[i][j].solution) cnt++;
-        return cnt;
     }
 
     public void crearNuevoLaberinto(int f, int c) {
@@ -210,9 +208,7 @@ public class MazeController {
             case "RecursiveBT":       return new MazeSolverRecursivoCompletoBT();
             case "Backtracking":      return new MazeSolverBackTracking();
             default:
-                throw new IllegalArgumentException(
-                    "Algoritmo desconocido: " + tipo
-                );
+                throw new IllegalArgumentException("Algoritmo desconocido: " + tipo);
         }
     }
 }
