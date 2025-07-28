@@ -89,7 +89,9 @@ src/
 ├── controllers/
 │   └── MazeController.java
 ├── dao/
-│   └── (pendiente/uso interno)
+│   ├── AlgorithmResultDAO.java
+│   └── daoImpl/
+│       └── AlgorithmResultDAOFile.java
 ├── models/
 │   ├── AlgorithmResult.java
 │   ├── Cell.java
