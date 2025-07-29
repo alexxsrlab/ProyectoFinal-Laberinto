@@ -9,7 +9,17 @@
 - **Profesor:** Ing. Pablo Torres  
 
 ---
+## ✨ Introducción
 
+Resolver laberintos puede parecer algo simple, pero detrás de eso hay algoritmos bastante interesantes que aplican estructuras de datos como pilas, colas o recursión. En este proyecto quisimos experimentar con varias formas de solucionar laberintos, implementando desde métodos básicos hasta técnicas más completas con visualización paso a paso. Todo esto lo llevamos a una interfaz gráfica que permite observar el comportamiento de cada algoritmo en tiempo real, facilitando así la comparación de su rendimiento y lógica.
+
+---
+
+## 🎯 Objetivo
+
+El objetivo principal fue desarrollar un solucionador de laberintos que permitiera comparar diferentes algoritmos aplicados al mismo problema. Además de resolver el laberinto, queríamos que el sistema mostrara visualmente cómo trabaja cada método, ayudando a entender conceptos como backtracking, BFS, DFS, y optimización. A través de esta aplicación, también buscamos reforzar conocimientos prácticos en Java, manejo de estructuras de datos, diseño de interfaces gráficas y organización de proyectos en equipo.
+
+---
 ## 🧩 Descripción 
 
 Implementación de 6 algoritmos con diferentes enfoques para resolver laberintos en Java, con visualización paso a paso en una interfaz gráfica.
@@ -165,3 +175,13 @@ src/
 ![alt text](image-8.png)
 
 ![alt text](image-9.png)
+
+## ✅ Conclusión
+
+A lo largo del desarrollo aprendimos que no existe un único camino para resolver un problema, y que cada enfoque tiene ventajas y desventajas según lo que se busque: velocidad, eficiencia de memoria o claridad del recorrido. El uso de visualización nos ayudó bastante para entender qué estaba ocurriendo en cada paso del algoritmo. Al final, pudimos integrar todos los métodos en una sola aplicación funcional, clara y útil tanto para el usuario común como para quien estudia algoritmos.
+
+---
+
+## 💡 Recomendación
+
+Si alguien más quiere hacer un proyecto parecido, le recomendamos enfocarse primero en entender bien cada algoritmo por separado antes de unirlos en una misma interfaz. También es clave planificar bien la estructura del código para que sea fácil de modificar o escalar. Finalmente, la visualización paso a paso fue de gran ayuda para detectar errores y explicar el funcionamiento, por lo que sugerimos incluir siempre ese tipo de herramientas si el tiempo lo permite.
